@@ -69,6 +69,17 @@ Deploying to an actual network, or writing integration tests that run
 against a live [GenLayer Studio](https://studio.genlayer.com/) instance,
 needs the GenLayer CLI as well. Not set up yet, see the status list below.
 
+## Demo
+
+[`demo/run_demo.py`](demo/run_demo.py) walks through a sample two-agent venture
+and prints the cap table correcting itself across two periods:
+
+```bash
+python demo/run_demo.py
+```
+
+See [demo/README.md](demo/README.md) for what it does and doesn't prove.
+
 ## Status / next steps for the build window
 
 - [x] Core Intelligent Contract: venture creation, contributor registration,
@@ -76,8 +87,9 @@ needs the GenLayer CLI as well. Not set up yet, see the status list below.
 - [x] Direct-mode test suite covering rubric setup, registration, scoring,
       and the self-correcting cumulative-score behavior across periods. All
       7 tests pass; `genvm-lint` is clean.
+- [x] Narrated demo script showing the split correcting itself across two
+      periods
 - [ ] Integration tests against a live GenLayer Studio instance
-- [ ] Seeded demo GitHub repo with staged, uneven contributor activity
 - [ ] Minimal frontend showing a live demo venture's cap table updating in
       real time as `recompute_equity()` runs
 - [ ] Demo video for submission
