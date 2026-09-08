@@ -5,7 +5,9 @@ __pycache__/
 venv/
 .env
 node_modules/
+dist/
 .pytest_cache/
 artifacts/
 .keystore-password.txt
 .genlayer/
+*.tsbuildinfo

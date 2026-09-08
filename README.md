@@ -135,6 +135,21 @@ python demo/run_demo.py
 
 See [demo/README.md](demo/README.md) for what it does and doesn't prove.
 
+## Frontend
+
+[`frontend/`](frontend/) is a small Vite + TypeScript page that reads the
+live contract above directly - rubric, cap table, and the reasoning behind
+each contributor's score, no wallet required to view. A connected wallet can
+also register as a contributor or trigger `recompute_equity()` for real.
+See [frontend/README.md](frontend/README.md) for setup and what's been
+verified so far.
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
 ## Status / next steps for the build window
 
 - [x] Core Intelligent Contract: venture creation, contributor registration,
@@ -147,8 +162,11 @@ See [demo/README.md](demo/README.md) for what it does and doesn't prove.
 - [x] Deployed and exercised live on GenLayer's Studio Network - real
       GitHub data, real multi-model validator consensus, real result read
       back from the chain (see Live deployment above)
-- [ ] A frontend showing a venture's cap table and letting someone trigger
-      `recompute_equity()` against the live contract
+- [x] Frontend ([`frontend/`](frontend/)) reading the live contract directly
+      - rubric and cap table confirmed loading with real on-chain data, no
+        wallet needed. Wallet-connected register/recompute is built the same
+        way but hasn't been clicked through with a real browser wallet yet
+        (see [frontend/README.md](frontend/README.md))
 - [ ] Demo video for submission
 
 ## Why this instead of another arbitration/marketplace pitch
