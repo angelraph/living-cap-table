@@ -148,12 +148,17 @@ See [demo/README.md](demo/README.md) for what it does and doesn't prove.
 
 ## Frontend
 
+**Live: https://living-cap-table-angelraphs-projects.vercel.app**
+
 [`frontend/`](frontend/) is a small Vite + TypeScript page that reads the
 live contract above directly - rubric, cap table, and the reasoning behind
 each contributor's score, no wallet required to view. A connected wallet can
 also register as a contributor or trigger `recompute_equity()` for real.
 See [frontend/README.md](frontend/README.md) for setup and what's been
 verified so far.
+
+Deployed on Vercel with the GitHub repo connected, so pushes to `master`
+that touch `frontend/` redeploy automatically.
 
 ```bash
 cd frontend
