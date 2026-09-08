@@ -18,10 +18,12 @@ Two pages:
 
 - Loads the rubric and cap table straight from the live contract on page
   load, with no wallet required - anyone can read it.
-- "Connect wallet" (any injected wallet, e.g. MetaMask) lets a visitor
-  register themselves as a contributor and call `recompute_equity()` for
-  real, from their own wallet, sending an actual transaction to the live
-  contract.
+- "Connect wallet" shows a picker of every wallet extension actually
+  installed in the visitor's browser (via EIP-6963 discovery, not just
+  whichever one happened to grab `window.ethereum`), and lets them register
+  as a contributor or call `recompute_equity()` for real, from their own
+  wallet, sending an actual transaction to the live contract. A connected
+  wallet can be disconnected again from the same panel.
 - Uses `genlayer-js`'s `buildGenVmPositionalArgs()` to turn plain form values
   into correctly-typed calldata against the contract's real on-chain schema
   (fetched via `getContractSchema`) - this matters specifically for the

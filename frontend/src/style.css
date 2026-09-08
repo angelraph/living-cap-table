@@ -93,6 +93,28 @@ header .tagline {
   flex-wrap: wrap;
 }
 
+.wallet-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.85rem;
+  max-width: 260px;
+}
+
+.wallet-option {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  justify-content: flex-start;
+  text-align: left;
+  width: 100%;
+}
+
+.wallet-option img {
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
 button {
   font: inherit;
   border: 1px solid var(--border);

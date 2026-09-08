@@ -19,6 +19,38 @@ declare global {
   }
 }
 
+// EIP-6963: lets every installed wallet extension announce itself, instead
+// of every wallet fighting over the single window.ethereum slot. This is
+// what makes "pick a wallet" possible instead of always grabbing whichever
+// extension happened to load last.
+interface WalletInfo {
+  uuid: string;
+  name: string;
+  icon: string;
+  rdns: string;
+}
+
+interface WalletAnnouncement {
+  info: WalletInfo;
+  provider: EthereumProvider;
+}
+
+const discoveredWallets = new Map<string, WalletAnnouncement>();
+
+window.addEventListener("eip6963:announceProvider", (event) => {
+  const detail = (event as CustomEvent<WalletAnnouncement>).detail;
+  discoveredWallets.set(detail.info.uuid, detail);
+  if (state.walletPickerOpen) render();
+});
+
+function requestWalletAnnouncements(): void {
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+}
+// Called once at the bottom of this file, after everything it touches
+// (state, render) exists - a wallet can respond to the request event
+// synchronously, which would otherwise run this callback before `state`
+// is initialized.
+
 interface ContributorRow {
   github_handle: string;
   wallet: string;
@@ -36,6 +68,7 @@ interface AppState {
   schema: ContractSchema | null;
   status: { kind: "idle" | "pending" | "ok" | "error"; message: string };
   busy: boolean;
+  walletPickerOpen: boolean;
 }
 
 const state: AppState = {
@@ -45,12 +78,14 @@ const state: AppState = {
   schema: null,
   status: { kind: "idle", message: "" },
   busy: false,
+  walletPickerOpen: false,
 };
 
 // No wallet needed to read - anyone can see the live cap table.
 const readClient = createClient({ chain: studionet });
 
 let writeClient: GenLayerClient | null = null;
+let activeProvider: EthereumProvider | null = null;
 
 async function loadCapTable(): Promise<void> {
   const [rubric, capTable] = await Promise.all([
@@ -72,13 +107,17 @@ async function loadCapTable(): Promise<void> {
   render();
 }
 
-async function connectWallet(): Promise<void> {
-  if (!window.ethereum) {
-    setStatus("error", "No wallet found. Install MetaMask or another injected wallet.");
-    return;
-  }
+function openWalletPicker(): void {
+  // Ask again in case a wallet extension announced itself after the page
+  // first loaded (some inject a little late).
+  requestWalletAnnouncements();
+  state.walletPickerOpen = !state.walletPickerOpen;
+  render();
+}
+
+async function connectWithProvider(provider: EthereumProvider): Promise<void> {
   try {
-    const accounts = (await window.ethereum.request({
+    const accounts = (await provider.request({
       method: "eth_requestAccounts",
     })) as string[];
     const address = accounts[0];
@@ -87,7 +126,19 @@ async function connectWallet(): Promise<void> {
     writeClient = createClient({
       chain: studionet,
       account: address as `0x${string}`,
-      provider: window.ethereum,
+      provider,
+    });
+    activeProvider = provider;
+
+    // If the wallet's own UI is used to switch or disconnect accounts,
+    // follow that here too instead of silently going stale.
+    provider.on?.("accountsChanged", (newAccounts) => {
+      const next = (newAccounts as string[])[0];
+      if (!next) {
+        disconnectWallet();
+      } else if (next !== state.connectedAddress) {
+        void connectWithProvider(provider);
+      }
     });
 
     // Prompts the wallet to add/switch to the Studio Network if it isn't
@@ -99,11 +150,25 @@ async function connectWallet(): Promise<void> {
     }
 
     state.connectedAddress = address;
+    state.walletPickerOpen = false;
     setStatus("idle", "");
     render();
   } catch (err) {
     setStatus("error", messageOf(err));
   }
+}
+
+function disconnectWallet(): void {
+  // This only forgets the connection on this page - it doesn't revoke the
+  // wallet extension's own site permission. That's normal: the wallet is
+  // still the one holding the keys, so only it can do that, from its own
+  // settings.
+  writeClient = null;
+  activeProvider = null;
+  state.connectedAddress = null;
+  state.walletPickerOpen = false;
+  setStatus("idle", "");
+  render();
 }
 
 async function getSchema(): Promise<ContractSchema> {
@@ -224,6 +289,34 @@ function renderCapTable(): string {
     .join("");
 }
 
+function renderWalletPicker(): string {
+  if (!state.walletPickerOpen) return "";
+
+  const wallets = Array.from(discoveredWallets.values());
+  const options = wallets
+    .map(
+      (w) => `
+        <button class="wallet-option" data-uuid="${escapeHtml(w.info.uuid)}">
+          <img src="${w.info.icon}" alt="" width="20" height="20" />
+          <span>${escapeHtml(w.info.name)}</span>
+        </button>
+      `
+    )
+    .join("");
+
+  const fallback =
+    wallets.length === 0 && window.ethereum
+      ? `<button class="wallet-option" data-fallback="true"><span>Browser wallet</span></button>`
+      : "";
+
+  const empty =
+    wallets.length === 0 && !window.ethereum
+      ? `<p class="empty">No wallet extension found. Install one, like MetaMask, then reload.</p>`
+      : "";
+
+  return `<div class="wallet-picker">${options}${fallback}${empty}</div>`;
+}
+
 function render(): void {
   const app = document.getElementById("app");
   if (!app) return;
@@ -256,10 +349,12 @@ function render(): void {
       <div class="wallet-row">
         ${
           state.connectedAddress
-            ? `<span>Connected as ${shortAddress(state.connectedAddress)}</span>`
+            ? `<span>Connected as ${shortAddress(state.connectedAddress)}</span>
+               <button id="disconnect-btn">Disconnect</button>`
             : `<button id="connect-btn" class="primary">Connect wallet</button>`
         }
       </div>
+      ${renderWalletPicker()}
     </div>
 
     <div class="card">
@@ -290,7 +385,23 @@ function render(): void {
   `;
 
   document.getElementById("connect-btn")?.addEventListener("click", () => {
-    void connectWallet();
+    openWalletPicker();
+  });
+
+  document.getElementById("disconnect-btn")?.addEventListener("click", () => {
+    disconnectWallet();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".wallet-option").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.fallback === "true") {
+        if (window.ethereum) void connectWithProvider(window.ethereum);
+        return;
+      }
+      const uuid = btn.dataset.uuid;
+      const wallet = uuid ? discoveredWallets.get(uuid) : undefined;
+      if (wallet) void connectWithProvider(wallet.provider);
+    });
   });
 
   document.getElementById("recompute-btn")?.addEventListener("click", () => {
@@ -311,3 +422,4 @@ function render(): void {
 
 render();
 void loadCapTable().catch((err) => setStatus("error", messageOf(err)));
+requestWalletAnnouncements();
