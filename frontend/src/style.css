@@ -226,9 +226,7 @@ form.register-form input {
 }
 
 .hero.closing {
-  padding-top: 1rem;
-  border-top: 1px solid var(--border);
-  margin-top: 1rem;
+  padding-top: 2.5rem;
 }
 
 .eyebrow {
@@ -273,8 +271,13 @@ form.register-form input {
   margin-top: 1rem;
 }
 
+.story {
+  padding: 2rem 0;
+}
+
 .story h2 {
   margin-top: 0;
+  font-size: 1.3rem;
 }
 
 .story p {
@@ -288,9 +291,7 @@ form.register-form input {
 .pro-note {
   color: var(--text-dim);
   font-size: 0.85rem;
-  border-top: 1px solid var(--border);
-  padding-top: 0.85rem;
-  margin-top: 1rem;
+  margin-top: 1.25rem;
   margin-bottom: 0;
 }
 
@@ -298,10 +299,20 @@ form.register-form input {
   color: var(--accent);
 }
 
+.steps-section {
+  padding: 2rem 0;
+}
+
+.steps-section h2 {
+  font-size: 1.3rem;
+  margin-top: 0;
+}
+
 .steps {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
 }
 
 .step {
