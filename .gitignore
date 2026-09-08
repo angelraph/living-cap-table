@@ -11,3 +11,4 @@ artifacts/
 .keystore-password.txt
 .genlayer/
 *.tsbuildinfo
+demo/VIDEO-SCRIPT.md
