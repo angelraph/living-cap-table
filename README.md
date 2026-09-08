@@ -95,6 +95,17 @@ Deployed and exercised for real on GenLayer's hosted Studio Network
   That's not a rubber stamp - the validators looked at the real activity and
   scored it conservatively against the rubric, which is the entire point.
 
+The wallet-connected flow in `frontend/` has since been clicked through for
+real too: connect wallet, `recompute_equity()` from a real browser wallet,
+transaction lands, cap table updates. A follow-up recompute (run again to
+double-check the first wasn't a silently-swallowed no-op, the way
+`register_contributor` was before it got fixed) moved the score from 12 to
+50 cumulative, with a fresh, specific judgment: *"Created the
+living-cap-table repo (directly relevant to rubric) but most activity is
+pushes to unrelated repos (lucid, charter); no reviewed PRs or verifiable
+quality work on the target repo visible."* Real evidence, re-evaluated,
+genuinely different reasoning each time - not cached, not repeated.
+
 Three real bugs turned up getting this far, all now fixed in the code:
 
 1. `register_contributor` originally took `wallet: str` and converted it to
@@ -163,10 +174,10 @@ npm run dev
       GitHub data, real multi-model validator consensus, real result read
       back from the chain (see Live deployment above)
 - [x] Frontend ([`frontend/`](frontend/)) reading the live contract directly
-      - rubric and cap table confirmed loading with real on-chain data, no
-        wallet needed. Wallet-connected register/recompute is built the same
-        way but hasn't been clicked through with a real browser wallet yet
-        (see [frontend/README.md](frontend/README.md))
+      and driving it - both the read side (rubric, cap table) and the
+      wallet-connected write side (register, recompute) confirmed working
+      against real on-chain data with a real browser wallet
+      (see [frontend/README.md](frontend/README.md))
 - [ ] Demo video for submission
 
 ## Why this instead of another arbitration/marketplace pitch

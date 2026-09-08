@@ -39,14 +39,11 @@ npm run build   # type-checks with tsc -b, then builds to dist/
 
 ## Verified so far
 
-The read path has been run for real against the live contract (screenshot
-in the top-level README's demo material): rubric and cap table both load
-correctly with no console errors, showing the actual on-chain values.
+The read path has been run for real against the live contract: rubric and
+cap table both load correctly with no console errors, showing the actual
+on-chain values.
 
-The write path (connect wallet, register, recompute) uses the same
-`writeContract` / `buildGenVmPositionalArgs` calls already verified working
-against this exact contract via the GenLayer CLI (see the top-level
-README's "Live deployment" section) - but hasn't yet been clicked through
-with an actual browser wallet extension, since this was built and verified
-in a sandboxed environment without one installed. That's the one remaining
-thing to click through by hand before calling this done.
+The write path has also been clicked through for real, with an actual
+browser wallet: connect, `recompute_equity()`, transaction lands, cap table
+updates with a fresh judgment. See the top-level README's "Live deployment"
+section for that result.
