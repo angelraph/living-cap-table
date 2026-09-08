@@ -178,7 +178,7 @@ npm run dev
       wallet-connected write side (register, recompute) confirmed working
       against real on-chain data with a real browser wallet
       (see [frontend/README.md](frontend/README.md))
-- [ ] Demo video for submission
+- [ ] Demo video for submission - script ready: [demo/VIDEO-SCRIPT.md](demo/VIDEO-SCRIPT.md)
 
 ## Why this instead of another arbitration/marketplace pitch
 
