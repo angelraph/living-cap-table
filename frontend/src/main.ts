@@ -229,6 +229,7 @@ function render(): void {
   if (!app) return;
 
   app.innerHTML = `
+    <a class="back-link" href="/">&larr; What is this?</a>
     <header>
       <h1>The Living Cap Table</h1>
       <p class="tagline">Equity that's read, not negotiated.</p>

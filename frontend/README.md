@@ -1,12 +1,20 @@
 # Living Cap Table frontend
 
-A small, dependency-light page for the live deployment at
-`0x2B20c02d514478a1E1E687628e12c86e100A5Ca1` on GenLayer's Studio Network.
-Vite + vanilla TypeScript, no framework - the app is one file
-([`src/main.ts`](src/main.ts)) because there wasn't enough surface area here
-to justify one.
+**Live: https://living-cap-table-angelraphs-projects.vercel.app**
 
-## What it does
+A small, dependency-light site for the live deployment at
+`0x2B20c02d514478a1E1E687628e12c86e100A5Ca1` on GenLayer's Studio Network.
+Vite + vanilla TypeScript, no framework.
+
+Two pages:
+
+- **`index.html`** - a plain-English explainer. What the problem is (told as
+  a one-paragraph story, not a pitch), how the mechanism works in four
+  steps, why the number can be trusted. No jargon needed to follow it.
+- **`app.html`** ([`src/main.ts`](src/main.ts)) - the actual dashboard.
+  Real rubric, real cap table, connect-a-wallet-and-trigger-it-for-real.
+
+## What the dashboard does
 
 - Loads the rubric and cap table straight from the live contract on page
   load, with no wallet required - anyone can read it.
