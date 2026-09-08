@@ -12,19 +12,23 @@ python demo/run_demo.py
 
 ## What this is, and what it isn't
 
-Aurora is not a real, currently-running venture. This script runs the actual
-contract from `contracts/living_cap_table.py`, through the same direct-mode VM the
-test suite uses, with GitHub and LLM calls mocked exactly the way the tests mock
-them. Same contract code and the same consensus calls (`gl.eq_principle.strict_eq`
-on real GitHub evidence, then again on the validators' scoring judgment), just no
-live network access during the run, which is what makes it free to run and gives
-identical output every time.
+Aurora is not a real, currently-running venture. This script deploys the actual
+contract from `contracts/living_cap_table.py` in direct-mode (the same VM the
+test suite uses) and calls its real `create_venture`, `register_contributor`,
+and `get_cap_table` methods for real.
 
-That means this script proves the mechanism works. It doesn't, on its own, prove
-that a live deployment pulling real GitHub activity from a real GitHub account
-would score things the same way an LLM would in production. That's what an
-eventual Studio deployment against a real registered contributor is for, which
-isn't set up yet (see the status list in the top-level README).
+The one thing it doesn't call is the real `recompute_equity()` end to end.
+That method's judgment step uses `gl.eq_principle.prompt_non_comparative` -
+needed so validators running genuinely different underlying models don't have
+to produce byte-identical text - and this test harness can't mock that call
+type yet. So this script calls `_apply_scores()` directly, the private method
+`recompute_equity()` hands its scores to once validators have agreed on them.
+The scores below stand in for what validators would agree on; the ledger math
+that turns them into an equity split is the real, unmodified code.
+
+The judgment step itself - real GitHub data, real multi-model consensus - has
+already been run for real against a live deployment. See the "Live
+deployment" section of the top-level README for that result.
 
 ## What it's for
 

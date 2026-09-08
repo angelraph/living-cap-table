@@ -6,12 +6,15 @@ the actual contract in contracts/living_cap_table.py doing the one thing
 that matters: correcting an equity split on its own when one contributor's
 real output changes, with nobody asking it to.
 
-It runs through GenLayer's direct-mode VM (the same one tests/direct uses),
-with GitHub and LLM calls mocked exactly the way the test suite mocks them -
-same contract code, same consensus calls, no live network access, so it's
-free to run and gives the same output every time. That makes it a
-reasonable thing to record for a demo video, and a reasonable thing for
-anyone reviewing this submission to run themselves.
+It runs through GenLayer's direct-mode VM (the same one tests/direct uses).
+The real contract's judgment step (gl.eq_principle.prompt_non_comparative,
+needed so validators running different underlying models don't have to
+produce byte-identical text) isn't mockable in this test harness, so this
+script calls _apply_scores() directly with the scores below standing in for
+what validators would have agreed on - the exact same thing tests/direct
+does, and the exact same deterministic ledger math the real contract runs.
+The judgment step itself has been run for real, against a live GitHub
+account, on a live deployment - see the README for that result.
 
 Run with:
     python demo/run_demo.py
@@ -30,28 +33,17 @@ from gltest.direct.loader import deploy_contract, create_address
 CONTRACT_PATH = PROJECT_ROOT / "contracts" / "living_cap_table.py"
 
 
-def _to_hex(raw_address: bytes) -> str:
-    return "0x" + raw_address.hex()
+def _to_address(raw_address: bytes):
+    """Imported lazily: the genlayer SDK only lands on sys.path after the
+    first deploy_contract() call."""
+    from genlayer.py.types import Address
+
+    return Address("0x" + raw_address.hex())
 
 
 def _section(title: str) -> None:
     print()
     print(f"--- {title} ---")
-
-
-def _mock_period(vm: VMContext, scores: dict) -> None:
-    """Point the next recompute_equity() call at one period's evidence.
-
-    Clears the previous period's mocks first - mock_web/mock_llm match in
-    registration order and never expire on their own, so without this the
-    second call would still be scored with the first period's answer.
-    """
-    vm.clear_mocks()
-    vm.mock_web(
-        r".*api\.github\.com/users/.*/events/public.*",
-        {"status": 200, "body": "[]"},
-    )
-    vm.mock_llm(r".*", json.dumps(scores))
 
 
 def main() -> None:
@@ -73,30 +65,28 @@ def main() -> None:
         contract.create_venture(rubric)
         print(f"Rubric: {rubric}")
 
-        contract.register_contributor("orion", "orion-agent-gh", _to_hex(orion))
-        contract.register_contributor("mira", "mira-agent-gh", _to_hex(mira))
+        contract.register_contributor("orion", "orion-agent-gh", _to_address(orion))
+        contract.register_contributor("mira", "mira-agent-gh", _to_address(mira))
         print("Registered: orion (builds the product), mira (runs growth and content)")
 
         _section("Period 1: kickoff week, both agents ship real work")
-        _mock_period(
-            vm,
+        contract._apply_scores(
+            ["orion", "mira"],
             {
                 "orion": {"score": 55, "reason": "shipped the core checkout flow, reviewed"},
                 "mira": {"score": 45, "reason": "wrote and shipped the launch content plan"},
             },
         )
-        contract.recompute_equity()
         print(json.dumps(contract.get_cap_table(), indent=2))
 
         _section("Period 2: mira goes quiet, orion carries the venture alone")
-        _mock_period(
-            vm,
+        contract._apply_scores(
+            ["orion", "mira"],
             {
                 "orion": {"score": 90, "reason": "shipped billing, onboarding, and a mobile fix"},
                 "mira": {"score": 0, "reason": "no verifiable public activity this period"},
             },
         )
-        contract.recompute_equity()
         print(json.dumps(contract.get_cap_table(), indent=2))
 
         _section("Nobody filed a claim. The ledger just caught up.")

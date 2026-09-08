@@ -45,14 +45,14 @@ class LivingCapTable(gl.Contract):
         self.created = True
 
     @gl.public.write
-    def register_contributor(self, handle: str, github_handle: str, wallet: str) -> None:
+    def register_contributor(self, handle: str, github_handle: str, wallet: Address) -> None:
         if not self.created:
             raise gl.vm.UserError("venture not created yet")
         if handle in self.contributors:
             raise gl.vm.UserError("handle already registered")
         self.contributors[handle] = Contributor(
             github_handle=github_handle,
-            wallet=Address(wallet),
+            wallet=wallet,
             score=u256(0),
             equity_bps=u256(0),
             last_scored_reason="",
@@ -83,51 +83,55 @@ class LivingCapTable(gl.Contract):
 
         evidence_json = gl.eq_principle.strict_eq(fetch_evidence)
 
-        # Step 2: this is the subjective call (was the work actually good?). Every
-        # validator asks the same LLM the same deterministic prompt over the same
-        # evidence and must land on byte-identical JSON for consensus, so the
-        # prompt is written to leave no room for the model to phrase its answer
-        # two different ways.
-        def score_evidence() -> str:
-            prompt = f"""
-You are scoring contributors to a venture against its equity rubric.
+        # Step 2: this is the subjective call (was the work actually good?).
+        # Validators run genuinely different underlying models (that's the
+        # point - no single model's bias sets everyone's equity), so their
+        # exact wording never matches byte-for-byte. This has to use
+        # non-comparative consensus: the leader proposes an answer and the
+        # other validators judge it against the criteria below, rather than
+        # every validator being required to independently produce identical
+        # text.
+        content_payload = json.dumps(
+            {"rubric": rubric, "evidence": json.loads(evidence_json)},
+            sort_keys=True,
+        )
+        task = (
+            "The content is JSON with a \"rubric\" (the plain-language equity "
+            "rubric for this venture) and \"evidence\" (each contributor's "
+            "recent public GitHub activity, keyed by internal handle).\n\n"
+            "For every internal handle present in \"evidence\", assign an "
+            "integer contribution score from 0 to 100 for this period, "
+            "judging real shipped or reviewed quality and impact against the "
+            "rubric - not raw event count. Padding activity with trivial or "
+            "low-quality commits must not raise a score. Briefly justify each "
+            "score in one short phrase."
+        )
+        criteria = (
+            "The output must be valid JSON containing exactly the internal "
+            "handles present in \"evidence\" as keys, each mapped to an "
+            "object of the form {\"score\": int between 0 and 100, \"reason\": "
+            "str}. Scores must reflect judged quality and impact rather than "
+            "activity volume - two contributors with similar activity volume "
+            "should not receive the same score if one shipped substantive, "
+            "reviewed work and the other did not."
+        )
 
-Rubric:
-{rubric}
+        result_text = gl.eq_principle.prompt_non_comparative(
+            lambda: content_payload,
+            task=task,
+            criteria=criteria,
+        )
+        scores = json.loads(result_text)
 
-Per-contributor recent public GitHub activity, keyed by internal handle (JSON):
-{evidence_json}
+        self._apply_scores(handles, scores)
 
-For every internal handle listed above, assign an integer contribution score
-from 0 to 100 for this period. Judge real, shipped or reviewed quality and
-impact against the rubric, not raw event count. Padding activity with trivial
-or low-quality commits must not raise a score. Justify each score in one
-short phrase.
+    def _apply_scores(self, handles: list, scores: dict) -> None:
+        """Fold one period's validator-agreed scores into the running ledger.
 
-Respond using ONLY the following JSON format, with one entry per handle
-listed above:
-{{
-    "<handle>": {{"score": int, "reason": str}}
-}}
-It is mandatory that you respond only using the JSON format above,
-nothing else. Don't include any other words or characters,
-your output must be only JSON without any formatting prefix or suffix.
-This result should be perfectly parseable by a JSON parser without errors.
-"""
-            result = gl.nondet.exec_prompt(prompt)
-            if isinstance(result, dict):
-                # Some SDK/runtime versions already parse a JSON-looking
-                # response for us.
-                parsed = result
-            else:
-                backticks = "``" + "`"
-                cleaned = result.replace(backticks + "json", "").replace(backticks, "")
-                parsed = json.loads(cleaned)
-            return json.dumps(parsed, sort_keys=True)
-
-        scores_json = gl.eq_principle.strict_eq(score_evidence)
-        scores = json.loads(scores_json)
-
+        Kept separate from the consensus calls above so this deterministic
+        arithmetic can be unit-tested directly, without needing to mock a
+        call type the test harness doesn't support.
+        """
         total = 0
         for handle in handles:
             c = self.contributors[handle]
@@ -146,13 +150,16 @@ This result should be perfectly parseable by a JSON parser without errors.
 
     @gl.public.view
     def get_cap_table(self) -> dict:
+        # equity_bps (0-10000) is the source of truth; a percentage is a
+        # display concern for whatever reads this, not something to compute
+        # here. GenVM's calldata encoder also can't serialize a raw float
+        # return value, which a computed percentage would have been.
         return {
             handle: {
                 "github_handle": self.contributors[handle].github_handle,
                 "wallet": self.contributors[handle].wallet.as_hex,
                 "score": int(self.contributors[handle].score),
                 "equity_bps": int(self.contributors[handle].equity_bps),
-                "equity_pct": round(int(self.contributors[handle].equity_bps) / 100, 2),
                 "last_scored_reason": self.contributors[handle].last_scored_reason,
             }
             for handle in self.handles

@@ -46,6 +46,8 @@ It also fixes a second problem founders already have: diligence. When it's time 
 
 ## What's built for the hackathon window
 
-The contract (`contracts/living_cap_table.py`) is done: venture creation, contributor registration, a `recompute_equity()` method that fetches real GitHub activity and has validators score it against the rubric, and a `get_cap_table()` view that shows the current split plus the reasoning behind it. There's a direct-mode test suite covering the registration rules and, most importantly, the case that matters — two contributors judged unevenly across two periods, and the cap table correcting itself with no one asking it to.
+The contract (`contracts/living_cap_table.py`) is done and deployed for real on GenLayer's hosted Studio Network: venture creation, contributor registration, a `recompute_equity()` method that fetches real GitHub activity and has validators score it against the rubric, and a `get_cap_table()` view that shows the current split plus the reasoning behind it. It's been run end to end against a real GitHub account, not mocked data — validators pulled the real activity, judged it conservatively against the rubric, and the result is readable from the live contract right now. Full details, including three real bugs that only showed up on the live network and how they were fixed, are in the README.
 
-Still to do before submission: a seeded demo GitHub repo with staged, uneven contributor activity to run the demo against, a small frontend that shows the cap table updating live, and a short demo video.
+There's also a direct-mode test suite covering the registration rules and the case that matters most — two contributors judged unevenly across two periods, with the cap table correcting itself and no one asking it to.
+
+Still to do before submission: a frontend that shows a venture's cap table and lets someone trigger `recompute_equity()` against the live contract, and a short demo video.
