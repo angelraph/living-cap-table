@@ -141,13 +141,15 @@ async function connectWithProvider(provider: EthereumProvider): Promise<void> {
       }
     });
 
-    // Prompts the wallet to add/switch to the Studio Network if it isn't
-    // already on it. Non-fatal if the wallet rejects or already matches.
-    try {
-      await writeClient.connect("studionet");
-    } catch (err) {
-      console.warn("Network switch prompt was not completed:", err);
-    }
+    // Deliberately not calling writeClient.connect("studionet") here: in
+    // this SDK version that method is a MetaMask-only helper (it installs
+    // GenLayer's MetaMask Snap) and it always talks to window.ethereum
+    // directly, ignoring whichever provider was actually picked - so with
+    // any other wallet selected, it silently popped up MetaMask on top of
+    // the wallet the user actually chose. It's also not needed here:
+    // Studio Network chains skip the wallet-network-match check entirely,
+    // and every write already correctly goes through the provider chosen
+    // above.
 
     state.connectedAddress = address;
     state.walletPickerOpen = false;

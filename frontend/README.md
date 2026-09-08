@@ -39,9 +39,7 @@ npm run dev
 Opens on `http://localhost:5173`. The read side (rubric, cap table) works
 immediately with no setup. The write side (register, recompute) needs a
 browser wallet extension pointed at the GenLayer Studio Network
-(chain id `61999`, RPC `https://studio.genlayer.com/api`) - the app calls
-`client.connect("studionet")` on connect, which prompts the wallet to add or
-switch to it if it isn't already configured.
+(chain id `61999`, RPC `https://studio.genlayer.com/api`).
 
 ```bash
 npm run build   # type-checks with tsc -b, then builds to dist/
@@ -57,3 +55,16 @@ The write path has also been clicked through for real, with an actual
 browser wallet: connect, `recompute_equity()`, transaction lands, cap table
 updates with a fresh judgment. See the top-level README's "Live deployment"
 section for that result.
+
+One real bug found this way: picking a non-MetaMask wallet (OKX, tested)
+from the picker would still sometimes pop up MetaMask on top of it. Traced
+to `genlayer-js`'s `client.connect()` in this SDK version - despite the
+name, it isn't a generic network-switch call, it's specifically MetaMask's
+Snap-installation flow, and it's hardcoded to talk to `window.ethereum`
+regardless of which provider the client was actually configured with. It
+only visibly interrupted when it had something to do (add/switch the
+chain, or install the Snap), which is why it looked intermittent - silent
+when MetaMask already happened to be in the right state, a surprise
+popup when it didn't. Removed the call entirely: GenLayer's Studio Network
+chains skip the wallet-network-match check outright, and every write
+already correctly goes through whichever provider was actually picked.
