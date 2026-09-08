@@ -1,59 +1,51 @@
 # The Living Cap Table
 
-**Equity that's read, not negotiated.**
+Equity that's read, not negotiated.
 
-**Track: Future of Work** — "Work verified by consensus, paid on outcome, with portable reputation."
-
----
+Track: Future of Work. That track is defined as "work verified by consensus, paid on outcome, with portable reputation," and that's exactly what this is.
 
 ## The one-liner
 
-A GenLayer Intelligent Contract that continuously recomputes ownership in an agent-built venture from validators' real-time judgment of verified contribution — so nobody ever files for their fair cut, because the ledger was never wrong long enough to need fixing.
+A GenLayer Intelligent Contract that keeps ownership in an agent-built venture continuously correct, instead of frozen at a day-one guess. Validators judge real GitHub and on-chain evidence for quality, not just activity, and recompute equity as they go. Nobody self-reports. Nobody votes. Nobody files a claim, because the ledger is never wrong long enough to need one.
 
 ## The problem
 
-Every agent-built venture — a product, a trading desk, a content operation run by a handful of autonomous agents plus a human founder — still freezes equity the old way: a percentage split negotiated on day one, before any real work exists.
+Every agent-built venture — a product, a trading desk, a content operation run by a few autonomous agents plus a human founder — still splits equity the old way: a percentage agreed on day one, before any real work exists.
 
-Reality never matches that split. One contributor does 80% of the shipping. Another disappears after the kickoff call. A third joins in week three and rebuilds the core of the thing. Nobody renegotiates, because renegotiating equity is a political, adversarial act — and an autonomous agent can't sit in that negotiation the way a cofounder can. The cap table has been wrong since day two, and it silently stays wrong for the life of the venture.
+Reality never matches that split. One contributor does most of the shipping. Another disappears after the kickoff call. A third joins in week three and rebuilds the core of the thing. Nobody renegotiates, because renegotiating equity is a political, adversarial act, and an autonomous agent can't sit in that negotiation the way a human cofounder can. So the cap table has been wrong since day two, and it stays wrong for the life of the venture, because there's no mechanism to correct it short of a conversation nobody wants to start.
 
-The tools that exist for this (Coordinape-style peer voting, SourceCred-style contribution scoring, manual vesting schedules) all break the same way for an agentic team: they need either self-reporting (trivially gamed by a careless or adversarial agent) or a human-style political process (agents can't meaningfully participate in "vibes"-based peer allocation). Nothing verifies that claimed work was *real and good*, not just *logged*.
+The tools that exist for this today (Coordinape-style peer voting, SourceCred-style contribution scoring, manual vesting schedules) break the same way for an agentic team. They need either self-reporting, which a careless or adversarial agent can game trivially, or a human-style political process, which an agent can't meaningfully take part in. None of them actually check whether claimed work was real and good, only whether it was logged.
 
-## The mechanism
+## How it works
 
-1. **Rubric, not formula.** A venture's founder defines the equity rubric in plain language at deploy time — e.g. *"equity should track shipped, reviewed code; deals sourced weighted by contract value; content weighted by engagement it verifiably drove."* No rigid point system to game.
-2. **Registration.** Each contributing agent registers its public work surface — GitHub handle, wallet, content accounts.
-3. **Continuous, non-deterministic evaluation.** On a cadence, GenLayer's validators independently pull live evidence — merged PRs, on-chain settlements, campaign data — straight from the open web, and reason over the rubric against that evidence. This is a genuinely subjective call (was this PR meaningful or padding? did this deal actually close on good terms?) — exactly the class of question Optimistic Democracy exists to settle by LLM-validator consensus, not a simple oracle lookup.
-4. **Consensus updates the ledger.** The validators' agreed contribution scores update a running equity ledger — vesting driven by verified output instead of the calendar.
-5. **The cap table is a public view, not a claim.** Anyone — a counterparty, an investor, an acquirer — can query the current split and the full evidence trail behind every basis point. There is no dispute process because there is no gap between what's owed and what's recorded large enough to need one.
+A venture's founder writes the equity rubric in plain language when the contract is deployed — something like "equity should track shipped, reviewed code; deals sourced weighted by contract value; content weighted by engagement it verifiably drove." That's the whole spec. There's no rigid point system to game.
 
-## Why this needs GenLayer specifically
+Each contributing agent registers its public work surface: GitHub handle, wallet, whatever else the rubric cares about.
 
-It needs all three things only GenLayer's Intelligent Contracts offer together: LLM-grade judgment over ambiguous real-world evidence (not "did X happen" but "was X good"), live web access from inside contract execution, and trust-minimized consensus over that judgment so no single party — including the founder — can quietly move the needle. Take away any one of those and the product degrades back into a gameable point system.
+On a cadence, or whenever anyone calls it, GenLayer's validators pull the real evidence — merged pull requests, on-chain settlements, campaign numbers — straight from the open web, and judge it against the rubric. That judgment is the hard part: was this pull request meaningful or padding? Did this deal actually close on good terms? That's a subjective call, and it's exactly the kind of question GenLayer's Optimistic Democracy was built to settle by validator consensus rather than a plain oracle lookup.
 
-## Why this is the rare pitch, not the obvious one
+Whatever the validators agree on updates a running equity ledger. Vesting driven by verified output instead of the calendar.
 
-Every other track-fit angle in this space is a **payment-on-deliverable** tool — Rally, Apolo, GHBounty, and MergeProof (all already live in this exact track) settle a one-time bounty against a one-time piece of verified work. That's a transaction primitive. The Living Cap Table is an **ownership primitive**: it doesn't pay out and close a ticket, it maintains a standing, ever-correcting stake for every contributor across the entire life of a venture. Nothing live in the ecosystem does this. It's also deliberately *not* another arbitration/dispute product (the single most crowded shape of GenLayer pitch, occupied here by Internet Court and the whole Onchain Justice track) — there is no complaint to file and no ruling to hand down, because the mechanism never lets a gap open up in the first place.
+The cap table itself is just a public view. Anyone — a counterparty, an investor, someone doing diligence before an acquisition — can see the current split and the evidence behind every basis point of it. There's no dispute process to build, because the mechanism doesn't let a gap open up between what's owed and what's recorded in the first place.
+
+## Why this needs GenLayer and not just an oracle
+
+It needs three things at once: judgment over ambiguous, real-world evidence (not "did X happen" but "was X good"), live access to the web from inside contract execution, and consensus over that judgment so no single party, including the founder, can quietly move the needle. Drop any one of those and it degrades back into a gameable point system that a Discord bot could run.
+
+## Why this is the rare pitch here
+
+Everything else that could plausibly sit in this track is a payment-on-deliverable tool. Rally, Apolo, GHBounty, and MergeProof, all already live in Future of Work, settle a one-time bounty against a one-time piece of verified work. That's a transaction primitive. The Living Cap Table is an ownership primitive: it doesn't pay out and close a ticket, it maintains a standing, self-correcting stake for every contributor across the life of a venture, and nothing live in the ecosystem does that yet.
+
+It's also deliberately not another arbitration product. That shape of pitch (agents disagree, GenLayer rules on it) is already the most common one on this platform, and it's occupied here by Internet Court in the Onchain Justice track. There's no ruling to hand down in this system at all, because there's never a rupture to rule on.
 
 ## Why a founder would actually want this
 
-The single most common way a small agent-plus-human venture quietly dies isn't a bad product — it's an equity fight, or the resentment that builds up when everyone privately believes the split is wrong and nobody says so. This removes the fight by removing the ambiguity: the record updates itself, in public, from evidence everyone can check. It also solves a second real problem founders have today — diligence. When it's time to raise, sell, or wind down, "who actually built this" is usually reconstructed from memory and Slack scrollback. Here it's just a query.
+The most common way a small agent-plus-human venture dies isn't a bad product. It's an equity fight, or the quieter version of that: everyone privately thinks the split is wrong and nobody says so until it's too late to fix without a blowup. This removes the fight by removing the ambiguity — the record updates itself, in public, from evidence anyone can check.
 
-## MVP scope for the build window (Sep 3–17)
+It also fixes a second problem founders already have: diligence. When it's time to raise, sell, or wind a venture down, "who actually built this" usually gets reconstructed from memory and old Slack messages. Here it's just a query.
 
-- One GenVM Intelligent Contract (Python) exposing:
-  - `create_venture(rubric: str)`
-  - `register_contributor(handle, github, wallet)`
-  - `recompute_equity()` — the non-deterministic method: fetches GitHub activity for each registered contributor, has validators reason over it against the rubric, reaches consensus via GenLayer's equivalence principle, updates the ledger
-  - `get_cap_table()` — public view: current split + evidence trail
-- A single-page frontend showing a live demo venture's cap table updating as real commits land in a seeded public GitHub repo
-- README + a short demo video: three agents contribute unevenly to the seeded repo, the cap table visibly self-corrects, nobody asks for anything
+## What's built for the hackathon window
 
-## Still needed for submission
+The contract (`contracts/living_cap_table.py`) is done: venture creation, contributor registration, a `recompute_equity()` method that fetches real GitHub activity and has validators score it against the rubric, and a `get_cap_table()` view that shows the current split plus the reasoning behind it. There's a direct-mode test suite covering the registration rules and, most importantly, the case that matters — two contributors judged unevenly across two periods, and the cap table correcting itself with no one asking it to.
 
-- GitHub repository (public) implementing the above
-- Full project application in the portal, plus a short demo video/GIF
-- Team info / links
-
----
-
-*Superseded drafts: "Court of Intent" (dispute-over-agreement adjudication — already live as Internet Court) and "Agent Probate" (succession-on-disappearance — same reactive-judgment shape as Court of Intent, just later in an agent's life). Living Cap Table was chosen because it's structurally proactive/continuous rather than reactive, and it doesn't compete in the crowded "agents in conflict, GenLayer judges" category at all.*
+Still to do before submission: a seeded demo GitHub repo with staged, uneven contributor activity to run the demo against, a small frontend that shows the cap table updating live, and a short demo video.

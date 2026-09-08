@@ -36,30 +36,47 @@ split in the first place:
 
 ## Running it
 
-Requires Python 3.12+ and the GenLayer CLI.
+Needs Python 3.12 or newer.
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate      # on Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-**Fast, in-memory tests (no Studio needed):**
+Then run the test suite, which deploys the contract in-memory and mocks the
+web/LLM calls, so it needs no running Studio and no network access:
 
 ```bash
 pytest tests/direct
 ```
 
-**Full consensus integration tests** (needs a running [GenLayer Studio](https://studio.genlayer.com/) instance):
+All 7 tests pass as of this writing (confirmed on Python 3.12, Linux). The
+GenLayer linter is also clean:
 
 ```bash
-gltest tests/integration -m integration
+genvm-lint contracts/living_cap_table.py
 ```
+
+On native Windows Python, `pytest tests/direct` currently fails with a
+`PermissionError` while `genlayer-test` tries to delete a temp file it's
+still holding open for stdin injection. Windows won't let you unlink a file
+while a handle to it is still open; POSIX does. That's a bug in that
+package's Windows support, not in this contract, so run tests from WSL,
+Linux, or macOS until upstream fixes it.
+
+Deploying to an actual network, or writing integration tests that run
+against a live [GenLayer Studio](https://studio.genlayer.com/) instance,
+needs the GenLayer CLI as well. Not set up yet, see the status list below.
 
 ## Status / next steps for the build window
 
 - [x] Core Intelligent Contract: venture creation, contributor registration,
       consensus-based equity recomputation, public cap table view
-- [x] Direct-mode test suite covering rubric setup, registration, scoring, and
-      the self-correcting cumulative-score behavior across periods
+- [x] Direct-mode test suite covering rubric setup, registration, scoring,
+      and the self-correcting cumulative-score behavior across periods. All
+      7 tests pass; `genvm-lint` is clean.
+- [ ] Integration tests against a live GenLayer Studio instance
 - [ ] Seeded demo GitHub repo with staged, uneven contributor activity
 - [ ] Minimal frontend showing a live demo venture's cap table updating in
       real time as `recompute_equity()` runs
