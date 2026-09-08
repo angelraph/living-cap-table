@@ -14,6 +14,15 @@ Two pages:
 - **`app.html`** ([`src/main.ts`](src/main.ts)) - the actual dashboard.
   Real rubric, real cap table, connect-a-wallet-and-trigger-it-for-real.
 
+Styled against GenLayer's own design system
+([genlayer-foundation/genlayer-design](https://github.com/genlayer-foundation/genlayer-design)),
+not a guess at it: Kinetic Cobalt (`#110FFF`) as the one strong accent,
+Carbon Void dark surfaces by default, Space Grotesk for headings and
+Switzer for body text, pill-shaped buttons, and the signature pink-to-blue
+gradient used sparingly as a soft, slow-drifting bloom behind the opening
+hero. Real hex values and font names pulled directly from that repo's
+`colors_and_type.css`, not copied from a secondhand summary.
+
 ## What the dashboard does
 
 - Loads the rubric and cap table straight from the live contract on page

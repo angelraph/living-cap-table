@@ -1,27 +1,42 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap");
+
+/*
+  Tokens below match GenLayer's own design system
+  (github.com/genlayer-foundation/genlayer-design) - Kinetic Cobalt accent,
+  Carbon Void dark surface, Space Grotesk / Switzer type, real state colors.
+  Dark is the default aesthetic per that system; light is an override for
+  anyone whose system prefers it.
+*/
 :root {
-  --bg: #f7f7f5;
-  --card: #ffffff;
-  --border: #e3e2de;
-  --text: #1b1b18;
-  --text-dim: #6b6a64;
-  --accent: #b45309;
-  --accent-bg: #fff7ed;
-  --good: #15803d;
-  --bad: #b91c1c;
-  --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --bg: #0a0a0c;
+  --card: #17171a;
+  --border: rgba(255, 255, 255, 0.1);
+  --text: #ffffff;
+  --text-dim: #ababab;
+  --accent: #110fff;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(17, 15, 255, 0.16);
+  --good: #16a34a;
+  --bad: #e00000;
+  --gradient: linear-gradient(135deg, #e37df7 0%, #9b6af6 45%, #110fff 100%);
+  --font-display: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Switzer", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (prefers-color-scheme: light) {
   :root {
-    --bg: #17171a;
-    --card: #201f23;
-    --border: #34333a;
-    --text: #ece9e6;
-    --text-dim: #9b9995;
-    --accent: #f0a35a;
-    --accent-bg: #2a2118;
-    --good: #4ade80;
-    --bad: #f87171;
+    --bg: #f8f8f8;
+    --card: #ffffff;
+    --border: #e5e5e6;
+    --text: #000000;
+    --text-dim: #6b6b6b;
+    --accent: #110fff;
+    --accent-contrast: #ffffff;
+    --accent-soft: rgba(17, 15, 255, 0.08);
+    --good: #16a34a;
+    --bad: #e00000;
   }
 }
 
@@ -33,8 +48,16 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
 }
 
 #app {
@@ -73,6 +96,7 @@ header .tagline {
 }
 
 .card h2 {
+  font-family: var(--font-body);
   font-size: 0.95rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -118,22 +142,31 @@ header .tagline {
 button {
   font: inherit;
   border: 1px solid var(--border);
-  background: var(--card);
+  background: transparent;
   color: var(--text);
-  border-radius: 7px;
-  padding: 0.55rem 1rem;
+  border-radius: 20px;
+  padding: 0.6rem 1.15rem;
   cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent);
 }
 
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #1b1b18;
+  color: var(--accent-contrast);
   font-weight: 600;
 }
 
+button.primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
@@ -187,11 +220,17 @@ form.register-form {
 
 form.register-form input {
   font: inherit;
-  padding: 0.5rem 0.6rem;
-  border-radius: 7px;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg);
+  background: var(--card);
   color: var(--text);
+}
+
+form.register-form input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
 .actions-row {
@@ -236,15 +275,52 @@ form.register-form input {
   max-width: 680px;
   margin: 0 auto;
   padding: 3rem 1.5rem 4rem;
+  position: relative;
 }
 
 .hero {
   text-align: center;
   padding: 1rem 0 2.5rem;
+  position: relative;
 }
 
 .hero.closing {
   padding-top: 2.5rem;
+}
+
+/* A soft, slowly drifting version of the signature gradient behind the
+   opening hero, the way GenLayer's own dark surfaces use it - gentle, not
+   a spinner. Barely there on purpose. */
+.hero::before {
+  content: "";
+  position: absolute;
+  top: -4rem;
+  left: 50%;
+  width: 34rem;
+  height: 20rem;
+  background: var(--gradient);
+  filter: blur(90px);
+  opacity: 0.16;
+  transform: translateX(-50%);
+  z-index: -1;
+  border-radius: 50%;
+  animation: bloom-drift 6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@media (prefers-color-scheme: light) {
+  .hero::before {
+    opacity: 0.1;
+  }
+}
+
+@keyframes bloom-drift {
+  from {
+    transform: translateX(-54%) translateY(0);
+  }
+  to {
+    transform: translateX(-46%) translateY(1rem);
+  }
 }
 
 .eyebrow {
@@ -275,12 +351,17 @@ form.register-form input {
 .cta-button {
   display: inline-block;
   background: var(--accent);
-  color: #1b1b18;
-  font-weight: 700;
+  color: var(--accent-contrast);
+  font-weight: 600;
   text-decoration: none;
   padding: 0.85rem 1.6rem;
-  border-radius: 8px;
+  border-radius: 20px;
   font-size: 1.05rem;
+  transition: filter 0.15s ease;
+}
+
+.cta-button:hover {
+  filter: brightness(1.1);
 }
 
 .hero-note {
@@ -344,8 +425,9 @@ form.register-form input {
   width: 2rem;
   height: 2rem;
   border-radius: 50%;
-  background: var(--accent-bg);
+  background: var(--accent-soft);
   color: var(--accent);
+  font-family: var(--font-display);
   font-weight: 700;
   display: flex;
   align-items: center;
