@@ -12,3 +12,5 @@ artifacts/
 .genlayer/
 *.tsbuildinfo
 demo/VIDEO-SCRIPT.md
+demo/VOICEOVER-SCRIPT-2m40.md
+x-post-live-update.txt
