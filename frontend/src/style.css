@@ -257,8 +257,30 @@ form.register-form input:focus {
   color: var(--bad);
 }
 
-.tx-link {
+.tx-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.tx-hash {
   font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  word-break: break-all;
+}
+
+.tx-copy-btn {
+  padding: 0.2rem 0.7rem;
+  font-size: 0.78rem;
+  border-radius: 20px;
+}
+
+.tx-link {
+  font-family: var(--font-body);
+  font-size: 0.78rem;
   color: var(--accent);
   text-decoration: underline;
 }

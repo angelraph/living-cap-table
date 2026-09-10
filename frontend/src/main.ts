@@ -283,10 +283,18 @@ function txExplorerUrl(hash: string): string {
 
 function renderStatus(status: AppState["status"]): string {
   if (!status.message) return "";
-  const link = status.txHash
-    ? ` <a href="${txExplorerUrl(status.txHash)}" target="_blank" rel="noreferrer" class="tx-link">${shortAddress(status.txHash)}</a>`
+  const hashRow = status.txHash
+    ? `
+      <div class="tx-row">
+        <code class="tx-hash">${escapeHtml(status.txHash)}</code>
+        <button type="button" class="tx-copy-btn" data-hash="${escapeHtml(status.txHash)}">Copy</button>
+        <a href="${txExplorerUrl(status.txHash)}" target="_blank" rel="noreferrer" class="tx-link">
+          View on GenLayer's explorer (external site, may be unavailable)
+        </a>
+      </div>
+    `
     : "";
-  return `<p class="status ${status.kind}">${escapeHtml(status.message)}${link}</p>`;
+  return `<p class="status ${status.kind}">${escapeHtml(status.message)}</p>${hashRow}`;
 }
 
 function renderCapTable(): string {
@@ -432,6 +440,25 @@ function render(): void {
 
   document.getElementById("recompute-btn")?.addEventListener("click", () => {
     void recomputeEquity();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".tx-copy-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const hash = btn.dataset.hash;
+      if (!hash) return;
+      navigator.clipboard
+        .writeText(hash)
+        .then(() => {
+          const original = btn.textContent;
+          btn.textContent = "Copied";
+          setTimeout(() => {
+            btn.textContent = original;
+          }, 1500);
+        })
+        .catch(() => {
+          setStatus("error", "Could not copy automatically, select the hash text instead.");
+        });
+    });
   });
 
   const form = document.getElementById("register-form") as HTMLFormElement | null;

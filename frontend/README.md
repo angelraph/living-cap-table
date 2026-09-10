@@ -89,10 +89,26 @@ cap table immediately, and the status message (including a live "this can
 take 20 to 40 seconds" note while validators are working) shows right
 there next to the result, not just at the bottom.
 
-Transaction hashes are now clickable, linking to GenLayer's public
-explorer (`genlayer-explorer.vercel.app/tx/<hash>`) instead of sitting
-there as plain unclickable text. Worth knowing: that explorer was
-returning a 503 (service unavailable) when this was built and tested -
-that's GenLayer's own infrastructure, not something this app controls, so
-the link may 503 too until their service is back. The transaction still
-genuinely happened either way; the explorer is just a viewer for it.
+Every transaction hash is now shown in full, with a working "Copy" button
+next to it, plus a link to GenLayer's public explorer. That link turned
+out to matter: checked directly, `genlayer-explorer.vercel.app` returns
+`DEPLOYMENT_PAUSED` - GenLayer has deliberately paused that project (a
+Vercel billing-pause state, not a transient outage), so it's not coming
+back on its own. The link is still there, labeled honestly as "may be
+unavailable" rather than presented as something that definitely works,
+because it might resume later and there's no reason to remove a link that
+could start working again. The Copy button is the part guaranteed to work
+today - copies the real hash so it can be checked another way (the
+`genlayer receipt <hash>` CLI command, for instance) regardless of
+whether that explorer is back up.
+
+## What "no wallet needed to view" actually means
+
+The cap table is public, on-chain state - anyone who opens this page sees
+it, wallet connected or not. That's not a bug, it's the actual point:
+"equity that's read, not negotiated" means the record is transparent to
+everyone, not private until you log in. The entry currently shown
+(`angelraph`) is a real registration made against a real GitHub account
+while building and testing this - it'll keep showing for every visitor
+until either more contributors register or the contract behind this demo
+changes.
