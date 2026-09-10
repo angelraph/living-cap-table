@@ -257,6 +257,12 @@ form.register-form input:focus {
   color: var(--bad);
 }
 
+.tx-link {
+  font-family: var(--mono);
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 .back-link {
   display: inline-block;
   color: var(--text-dim);

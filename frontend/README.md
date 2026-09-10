@@ -77,3 +77,22 @@ when MetaMask already happened to be in the right state, a surprise
 popup when it didn't. Removed the call entirely: GenLayer's Studio Network
 chains skip the wallet-network-match check outright, and every write
 already correctly goes through whichever provider was actually picked.
+
+## Result feedback
+
+The cap table sits near the top of the page; the register/recompute
+buttons sit near the bottom. Early on, that meant clicking "Recompute
+equity" and getting real feedback only in a small status line at the very
+bottom, while the actual result changed somewhere you'd already scrolled
+past. Fixed: clicking either action now scrolls the page back up to the
+cap table immediately, and the status message (including a live "this can
+take 20 to 40 seconds" note while validators are working) shows right
+there next to the result, not just at the bottom.
+
+Transaction hashes are now clickable, linking to GenLayer's public
+explorer (`genlayer-explorer.vercel.app/tx/<hash>`) instead of sitting
+there as plain unclickable text. Worth knowing: that explorer was
+returning a 503 (service unavailable) when this was built and tested -
+that's GenLayer's own infrastructure, not something this app controls, so
+the link may 503 too until their service is back. The transaction still
+genuinely happened either way; the explorer is just a viewer for it.

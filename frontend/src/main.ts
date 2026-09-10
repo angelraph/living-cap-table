@@ -66,7 +66,7 @@ interface AppState {
   capTable: CapTable;
   connectedAddress: string | null;
   schema: ContractSchema | null;
-  status: { kind: "idle" | "pending" | "ok" | "error"; message: string };
+  status: { kind: "idle" | "pending" | "ok" | "error"; message: string; txHash?: string };
   busy: boolean;
   walletPickerOpen: boolean;
 }
@@ -180,12 +180,17 @@ async function getSchema(): Promise<ContractSchema> {
   return state.schema;
 }
 
+function scrollToCapTable(): void {
+  document.getElementById("cap-table-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 async function registerContributor(handle: string, githubHandle: string): Promise<void> {
   if (!writeClient || !state.connectedAddress) {
     setStatus("error", "Connect your wallet first.");
     return;
   }
-  setBusy(true, "Sending register_contributor...");
+  setBusy(true, "Sending the transaction. Watch the cap table above, it updates there once this lands.");
+  scrollToCapTable();
   try {
     const schema = await getSchema();
     const args = buildGenVmPositionalArgs({
@@ -203,10 +208,11 @@ async function registerContributor(handle: string, githubHandle: string): Promis
       args: args as any[],
       value: 0n,
     });
-    setStatus("pending", `Submitted: ${hash}`);
+    setStatus("pending", "Submitted, waiting for validators to accept it.", hash);
     await readClient.waitForTransactionReceipt({ hash: hash as any, status: "ACCEPTED" as any });
     await loadCapTable();
-    setStatus("ok", `Registered. Tx: ${hash}`);
+    scrollToCapTable();
+    setStatus("ok", "Registered.", hash);
   } catch (err) {
     setStatus("error", messageOf(err));
   } finally {
@@ -219,7 +225,11 @@ async function recomputeEquity(): Promise<void> {
     setStatus("error", "Connect your wallet first.");
     return;
   }
-  setBusy(true, "Sending recompute_equity - validators are pulling real GitHub activity, this can take a moment...");
+  setBusy(
+    true,
+    "Sent. GenLayer's validators are pulling real GitHub activity right now and judging it against the rubric above. This can take 20 to 40 seconds, watch the cap table above, it updates there."
+  );
+  scrollToCapTable();
   try {
     const hash = await writeClient.writeContract({
       address: CONTRACT_ADDRESS,
@@ -227,10 +237,11 @@ async function recomputeEquity(): Promise<void> {
       args: [],
       value: 0n,
     });
-    setStatus("pending", `Submitted: ${hash}`);
+    setStatus("pending", "Submitted, waiting for validators to accept it.", hash);
     await readClient.waitForTransactionReceipt({ hash: hash as any, status: "ACCEPTED" as any });
     await loadCapTable();
-    setStatus("ok", `Recomputed. Tx: ${hash}`);
+    scrollToCapTable();
+    setStatus("ok", "Recomputed.", hash);
   } catch (err) {
     setStatus("error", messageOf(err));
   } finally {
@@ -238,8 +249,8 @@ async function recomputeEquity(): Promise<void> {
   }
 }
 
-function setStatus(kind: AppState["status"]["kind"], message: string): void {
-  state.status = { kind, message };
+function setStatus(kind: AppState["status"]["kind"], message: string, txHash?: string): void {
+  state.status = { kind, message, txHash };
   render();
 }
 
@@ -264,6 +275,18 @@ function escapeHtml(s: string): string {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
+}
+
+function txExplorerUrl(hash: string): string {
+  return `${EXPLORER_URL}/tx/${hash}`;
+}
+
+function renderStatus(status: AppState["status"]): string {
+  if (!status.message) return "";
+  const link = status.txHash
+    ? ` <a href="${txExplorerUrl(status.txHash)}" target="_blank" rel="noreferrer" class="tx-link">${shortAddress(status.txHash)}</a>`
+    : "";
+  return `<p class="status ${status.kind}">${escapeHtml(status.message)}${link}</p>`;
 }
 
 function renderCapTable(): string {
@@ -341,8 +364,9 @@ function render(): void {
       <p class="rubric-text">${state.rubric ? escapeHtml(state.rubric) : "<span class=\"empty\">Not loaded yet.</span>"}</p>
     </div>
 
-    <div class="card">
+    <div class="card" id="cap-table-card">
       <h2>Cap table</h2>
+      ${renderStatus(state.status)}
       ${renderCapTable()}
     </div>
 
@@ -382,7 +406,7 @@ function render(): void {
           Recompute equity
         </button>
       </div>
-      ${state.status.message ? `<p class="status ${state.status.kind}">${escapeHtml(state.status.message)}</p>` : ""}
+      ${renderStatus(state.status)}
     </div>
   `;
 
